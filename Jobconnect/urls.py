@@ -1,9 +1,16 @@
-from django.contrib import admin
 from django.urls import path
-from carrers import views
+from django.contrib import admin
+
+from carrers.views import (
+    LoginView, SignupView, JobCreateView,MyHome
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', views.login_view, name='login'),
-    path('signup/', views.signup_view, name='signup'),
+    path('my-login/', LoginView.as_view(), name='my-login'),
+    path('my-signup/', SignupView.as_view(), name='my-signup'),
+    path('job-creation/', JobCreateView.as_view(), name='job_creation'),
+    path('my-home/',MyHome.as_view(),name="my-home"),
+    
+
 ]

@@ -1,45 +1,46 @@
-from django.shortcuts import render,HttpResponse,redirect
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login,logout
-from django.contrib.auth.decorators import login_required
-# Create your views here.
-@login_required(login_url='login')
-def HomePage(request):
-    return render (request,'home.html')
+from django.db import models
 
-def signup_view(request):
-    if request.method=='POST':
-        uname=request.POST.get('username')
-        email=request.POST.get('email')
-        pass1=request.POST.get('password1')
-        pass2=request.POST.get('password2')
+    
+class Skill(models.Model):
+    name=models.CharField(max_length=20)
+    
+    def __str__(self):
+        return self.name
 
-        if pass1!=pass2:
-            return HttpResponse("Your password and confrom password are not Same!!")
-        else:
+class Company(models.Model):
+    company_name = models.CharField(max_length=255)
+    address = models.TextField()
+    website = models.URLField()
 
-            my_user=User.objects.create_user(uname,email,pass1)
-            my_user.save()
-            return redirect('login')
-        
+    def __str__(self):
+        return self.company_name
+class Job(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    role = models.CharField(max_length=255)
+    industry_type = models.CharField(max_length=255)
+    how_many_openings = models.IntegerField()
+    location = models.ForeignKey('JobLocation', on_delete=models.CASCADE)
+    how_many_applied = models.IntegerField()
+    employment_type = models.CharField(max_length=50)
+    intern_months = models.IntegerField(null=True, blank=True)
+    created_on = models.DateField()
+    validity_until = models.DateField()
+    is_active = models.BooleanField()
+    salary_available = models.BooleanField()
+    min_salary = models.PositiveSmallIntegerField(null=True, blank=True)
+    max_salary = models.PositiveSmallIntegerField(null=True, blank=True)
+    education_level = models.CharField(max_length=255)
+    years_of_experience = models.PositiveSmallIntegerField()
+    skills_mandatory = models.ManyToManyField(Skill, related_name='jobs_mandatory')
+    skills_optional = models.ManyToManyField(Skill, related_name='jobs_optional')
+    minimum_education = models.CharField(max_length=255)
+    company_info = models.ForeignKey(Company, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.title
+class JobLocation(models.Model):
+    name = models.CharField(max_length=255)
 
-
-    return render (request,'signup.html')
-
-def login_view(request):
-    if request.method=='POST':
-        username=request.POST.get('username')
-        pass1=request.POST.get('pass')
-        user=authenticate(request,username=username,password=pass1)
-        if user is not None:
-            login(request,user)
-            return redirect('home')
-        else:
-            return HttpResponse ("Username or Password is incorrect!!!")
-
-    return render (request,'login.html')
-
-def LogoutPage(request):
-    logout(request)
-    return redirect('login')
+    def __str__(self):
+        return self.name

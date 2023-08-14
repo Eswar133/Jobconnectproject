@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Design by foolishdeveloper.com -->
-    <title>Signup Page</title>
+    <title>Login Page</title>
  
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -51,8 +50,8 @@ body{
     bottom: -80px;
 }
 form{
-    height: 600px;
-    width: 450px;
+    height: 520px;
+    width: 400px;
     background-color: rgba(255,255,255,0.13);
     position: absolute;
     transform: translate(-50%,-50%);
@@ -86,12 +85,12 @@ label{
 }
 input{
     display: block;
-    height: 40px;
+    height: 50px;
     width: 100%;
     background-color: rgba(255,255,255,0.07);
     border-radius: 3px;
     padding: 0 10px;
-    margin-top: 2px;
+    margin-top: 8px;
     font-size: 14px;
     font-weight: 300;
 }
@@ -99,7 +98,7 @@ input{
     color: #e5e5e5;
 }
 button{
-    margin-top: 14px;
+    margin-top: 50px;
     width: 100%;
     background-color: #ffffff;
     color: #080710;
@@ -139,25 +138,21 @@ button{
         <div class="shape"></div>
         <div class="shape"></div>
     </div>
-    <form action="" method="post">
+    <form method="post" action="{% url 'my-login' %}">
         {% csrf_token %} 
-        <h3>Signup Here</h3>
-
-        <label for="username">Username</label>
-        <input type="text" placeholder="Username" name="username" id="username">
-
-        <label for="email">Email</label>
-        <input type="email" placeholder="Email or Phone" name="email" id="email">
-
-        <label for="password1">Password</label>
-        <input type="password" placeholder="Password" id="password1" name="password1">
-
-
-        <label for="password2">Confrom Password</label>
-        <input type="password" placeholder="Confrom Password" id="password2" name="password2">
-        <button type="submit">Signup</button>
+        <h3>Login Here</h3>
         
-        <a href="{% url 'login' %}" >i have already account</a>
+        <label for="username">Username</label>
+        <input type="text" placeholder="Enter Username" id="username" name="username">
+
+
+        <label for="password">Password</label>
+        <input type="password" placeholder="password" id="password" required name="pass">
+
+
+        <button type="submit">Log In</button>
+        
+        <a href="{% url 'my-signup' %}" >Create a account</a>
     </form>
 </body>
 </html>
