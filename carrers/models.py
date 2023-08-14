@@ -1,13 +1,5 @@
 from django.db import models
-from datetime import datetime
 
-
-
-class JobLocation(models.Model):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
     
 class Skill(models.Model):
     name=models.CharField(max_length=20)
@@ -18,48 +10,46 @@ class Skill(models.Model):
 class Company(models.Model):
     company_name = models.CharField(max_length=255)
     address = models.TextField()
-    website = models.URLField(max_length=200)
+    website = models.URLField()
+
+class JobLocation(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
 
     def __str__(self):
         return self.company_name
-    
-    
 class Job(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     role = models.CharField(max_length=255)
     industry_type = models.CharField(max_length=255)
-    location=models.CharField(max_length=20)
-    number_of_openings = models.PositiveSmallIntegerField()
-    
-    EMPLOYMENT_TYPE_CHOICES=[
-        ('full_time','Full-Time'),
-        ('part_time', 'Part-Time'),
-        ('work_from_home', 'Work from Home'),
-    ]
-    employment_type=models.CharField(max_length=50,choices=EMPLOYMENT_TYPE_CHOICES)
-    duration_of_employment_months = models.PositiveIntegerField(null=True, blank=True)
-    open_until=models.DateTimeField()
+    how_many_openings = models.IntegerField()
+    location = models.ForeignKey('JobLocation', on_delete=models.CASCADE)
+    no_of_openings = models.IntegerField()
+    employment_type = models.CharField(max_length=50)
+    duration_in_months = models.IntegerField(null=True, blank=True)
+    created_on = models.DateField()
+    valid_until = models.DateField()
     is_active = models.BooleanField()
-    salary_visible = models.BooleanField()
+    salary_visible = models.BooleanField(null=True)
     min_salary = models.PositiveSmallIntegerField(null=True, blank=True)
     max_salary = models.PositiveSmallIntegerField(null=True, blank=True)
-    EDUCATION_LEVEL_CHOICES = [
-        ('btech', 'B.Tech'),
-        ('mtech', 'M.Tech'),
-        ('mba', 'MBA'),
-        ('ms', 'MS'),
-        
-    ]
-    education_level = models.CharField(max_length=255,choices=EDUCATION_LEVEL_CHOICES)#rewrite usingchoices
+    education_level = models.CharField(max_length=255)
     years_of_experience = models.PositiveSmallIntegerField()
-    skills_mandatory = models.ManyToManyField(Skill, related_name='mandatory_skill_jobs')
-    skills_optional = models.ManyToManyField(Skill, related_name='optional_skills_jobs',blank=True)
-    created_on=models.DateTimeField(default=datetime.now,blank=True)
-    
-    
+    skills_mandatory = models.ManyToManyField(Skill, related_name='jobs_mandatory')
+    skills_optional = models.ManyToManyField(Skill, related_name='jobs_optional')
+    company_info = models.ForeignKey(Company, on_delete=models.CASCADE)
+    skills_mandatory = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='jobs_mandatory')
+    skills_optional = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='jobs_optional')
+
 
     def __str__(self):
         return self.title
+    def create_or_get_location(cls, location_name):
+        location, created = JobLocation.objects.get_or_create(name=location_name)
+        return location
     
     

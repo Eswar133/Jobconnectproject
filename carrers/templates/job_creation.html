@@ -14,108 +14,100 @@
 <body>
   <div class="container mt-5">
     <h2>Create a Job Posting</h2>
-    <form id="jobForm"  method="POST" action="{%url 'job_creation'%}" >
-        {%csrf_token%}
+    <form id="jobForm" method="POST" action="{% url 'job_creation' %}">
+      {% csrf_token %}
       <div class="form-group">
         <label for="title">Title:</label>
-        <div class="input-group mb-3">
-          <input type="text" class="form-control" id="title" name="title" required>
-        </div>
+        <input type="text" class="form-control" id="title" name="title" required>
       </div>
       <div class="form-group">
         <label for="description">Description:</label>
-        <div class="input-group mb-3">
-          <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-        </div>
+        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
       </div>
       <div class="form-group">
         <label for="role">Role:</label>
-        <div class="input-group mb-3">
-          <input type="text" class="form-control" id="role" name="role" required>
-        </div>
+        <input type="text" class="form-control" id="role" name="role" required>
       </div>
       <div class="form-group">
-        <label for="industryType">Industry Type:</label>
-        <input type="text" class="form-control" id="industryType" name="industryType" required>
+        <label for="industry_type">Industry Type:</label>
+        <input type="text" class="form-control" id="industry_type" name="industry_type" required>
       </div>
       <div class="form-group">
-        <label for="openings">Number of Openings:</label>
-        <input type="number" class="form-control" id="openings" name="openings" required>
+        <label for="how_many_openings">Number of Openings:</label>
+        <input type="number" class="form-control" id="how_many_openings" name="how_many_openings" required>
       </div>
       <div class="form-group">
         <label for="location">Location:</label>
         <input type="text" class="form-control" id="location" name="location" required>
       </div>
       <div class="form-group">
-        <label for="employmentType">Employment Type:</label>
-        <select class="form-control" id="employmentType" name="employmentType" required>
+        <label for="employment_type">Employment Type:</label>
+        <select class="form-control" id="employment_type" name="employment_type" required>
           <option value="FULLTIME">Full-Time</option>
           <option value="PARTTIME">Part-Time</option>
           <option value="WORKFROMHOME">Work from Home</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="employmentDuration">Duration of Employment (months):</label>
-        <input type="number" class="form-control" id="employmentDuration" name="employmentDuration" required>
+        <label for="intern_months">Internship Months:</label>
+        <input type="number" class="form-control" id="intern_months" name="intern_months" required>
       </div>
       <div class="form-group">
-        <label for="openUntil">Open Until:</label>
-        <input type="datetime" class="form-control" id="datepickerOpenUntil" name="open_until" >
-      </div>
-      
-      <div class="form-group">
-        <label for="salaryVisible">Salary Visible:</label>
-        <input type="checkbox" class="form-control" id="salaryVisible" name="salaryVisible">
-      </div>
-      
-      <div class="form-group">
-        <label for="minSalary">Minimum Salary:</label>
-        <input type="number" class="form-control" id="minSalary" name="minSalary" disabled>
-      </div>
-      
-      <div class="form-group">
-        <label for="maxSalary">Maximum Salary:</label>
-        <input type="number" class="form-control" id="maxSalary" name="maxSalary" disabled>
+        <label for="created_on">Created On:</label>
+        <input type="datetime-local" class="form-control" id="created_on" name="created_on" required>
       </div>
       <div class="form-group">
-        <label for="educationLevel">Education Level:</label>
-        <select class="form-control" id="educationLevel" name="educationLevel" required>
-          <option value="btech">B.Tech</option>
-          <option value="mtech">M.Tech</option>
-          <option value="mba">MBA</option>
-          <option value="ms">MS</option>
+        <label for="validity_until">Validity Until:</label>
+        <input type="datetime-local" class="form-control" id="validity_until" name="validity_until" required>
+      </div>
+      <div class="form-group">
+        <label for="is_active">Is Active:</label>
+        <input type="checkbox" class="form-control" id="is_active" name="is_active">
+      </div>
+      <div class="form-group">
+        <label for="salary_available">Salary Available:</label>
+        <input type="checkbox" class="form-control" id="salary_available" name="salary_available">
+      </div>
+      <div class="form-group">
+        <label for="min_salary">Minimum Salary:</label>
+        <input type="number" class="form-control" id="min_salary" name="min_salary">
+      </div>
+      <div class="form-group">
+        <label for="max_salary">Maximum Salary:</label>
+        <input type="number" class="form-control" id="max_salary" name="max_salary">
+      </div>
+      <div class="form-group">
+        <label for="education_level">Education Level:</label>
+        <select class="form-control" id="education_level" name="education_level" required>
+          <option value="BACHELOR">Bachelor</option>
+          <option value="MASTER">Master</option>
+          <option value="DOCTORATE">Doctorate</option>
         </select>
       </div>
-      
       <div class="form-group">
-        <label for="yearsOfExperience">Years of Experience:</label>
-        <input type="number" class="form-control" id="yearsOfExperience" name="yearsOfExperience">
-      </div>
-      
-      <div class="form-group">
-        <label for="mandatorySkills">Mandatory Skills:</label>
-        <input type="text" class="form-control" id="mandatorySkills" name="mandatorySkills">
-      </div>
-      
-      <div class="form-group">
-        <label for="optionalSkills">Optional Skills:</label>
-        <input type="text" class="form-control" id="optionalSkills" name="optionalSkills">
+        <label for="years_of_experience">Years of Experience:</label>
+        <input type="number" class="form-control" id="years_of_experience" name="years_of_experience" required>
       </div>
       <div class="form-group">
-        <label for="CreatedOn">created on</label>
-        <input type="datetime" class="form-control" id="datepickerCreatedOn" name="created_on">
-
-    </div>
-    
-      
-
-      
+        <label for="mandatory_skills">Mandatory Skills (comma-separated):</label>
+        <input type="text" class="form-control" id="mandatory_skills" name="mandatory_skills">
+      </div>
+      <div class="form-group">
+        <label for="optional_skills">Optional Skills (comma-separated):</label>
+        <input type="text" class="form-control" id="optional_skills" name="optional_skills">
+      </div>
+      <div class="form-group">
+        <label for="company_name">Company Name:</label>
+        <input type="text" class="form-control" id="company_name" name="company_name" required>
+      </div>
       <div class="form-group">
         <button type="submit" class="btn btn-primary">Create Job Posting</button>
       </div>
     </form>
   </div>
   <div id="message"></div>
+</body>
+</html>
 
   <script>
     $(function() {
