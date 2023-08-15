@@ -8,10 +8,9 @@ class Skill(models.Model):
         return self.name
 
 class Company(models.Model):
-    company_name = models.CharField(max_length=255,null=True )
+    company_name = models.CharField(max_length=255)
     address = models.TextField(null=True)
     website = models.URLField(null=True)
-    
     def __str__(self):
         return self.company_name
 
