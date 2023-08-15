@@ -49,7 +49,7 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
-    
+    @classmethod
     def create_or_get_location(cls, location_name):
         location, created = JobLocation.objects.get_or_create(name=location_name)
         return location

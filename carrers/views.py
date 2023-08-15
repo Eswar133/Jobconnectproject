@@ -52,35 +52,85 @@ def LogoutPage(request):
     logout(request)
     return redirect('my-login')
 
-class JobForm(View):
-    template_name='job_creation.html'
 
+class LocationFormView(View):
+    template_name = 'job_location.html'  # Create a template named location_form.html
+
+    @method_decorator(login_required)
     def get(self, request):
         return render(request, self.template_name)
-    
+
+    @method_decorator(login_required)
+    def post(self, request):
+        location_name = request.POST.get('location_name')
+        location, created = JobLocation.objects.get_or_create(name=location_name)
+        messages.success(request, f'Location "{location_name}" added successfully')
+        return redirect('job_creation')
+
+
+class SkillFormView(View):
+    template_name = 'skill_form.html'  # Create a template named skill_form.html
+
+    @method_decorator(login_required)
+    def get(self, request):
+        return render(request, self.template_name)
+
+    @method_decorator(login_required)
+    def post(self, request):
+        mandatory_skill_name = request.POST.get('skills_mandatory')
+        optional_skill_name = request.POST.get('skills_optional')
+        skill, created = Skill.objects.get_or_create(name=mandatory_skill_name)
+        skill, created = Skill.objects.get_or_create(name=optional_skill_name)
+        messages.success(request, f'Skill "{mandatory_skill_name} " added successfully')
+        messages.success(request, f'Skill "{optional_skill_name} " added successfully')
+        return redirect('job_creation')
+
+
+class JobForm(View):
+    template_name = 'job_creation.html'
+
+    @method_decorator(login_required)
+    def get(self, request):
+        skills_mandatory = Skill.objects.all()
+        skills_optional = Skill.objects.all()
+        job_locations = JobLocation.objects.all()
+        return render(request, self.template_name, {
+            'skills_mandatory': skills_mandatory,
+            'skills_optional': skills_optional,
+            'job_locations': job_locations,
+        })
+
+    @method_decorator(login_required)
     def post(self, request):
         title = request.POST.get('title')
         description = request.POST.get('description')
         role = request.POST.get('role')
         industry_type = request.POST.get('industry_type')
-        no_of_openings = int(request.POST.get('no_of_openings',0))
-        location_name = request.POST.get('location_name')
-        location = JobLocation.create_or_get_location(location_name)
+        no_of_openings = int(request.POST.get('no_of_openings', 0))
+        location_id = int(request.POST.get('location_name'))
+        location=get_object_or_404(JobLocation,id=location_id)
         employment_type = request.POST.get('employment_type')
-        duration_in_months =int(request.POST.get('duration_in_months',0))
+        duration_in_months = int(request.POST.get('duration_in_months', 0))
         created_on = datetime.now()
         valid_until = datetime.strptime(request.POST.get('valid_until'), '%Y-%m-%d')
-        is_active = bool(request.POST.get('is_active',False))
-        salary_visible =bool (request.POST.get('salary_visible',False))
+        is_active = bool(request.POST.get('is_active', False))
+        salary_visible = bool(request.POST.get('salary_visible', False))
         min_salary = int(request.POST.get('min_salary', 0))
-        max_salary = int(request.POST.get('max_salary',0))
+        max_salary = int(request.POST.get('max_salary', 0))
         education_level = request.POST.get('education_level')
-        years_of_experience = int(request.POST.get('years_of_experience',0))
+        years_of_experience = int(request.POST.get('years_of_experience', 0))
         company_name = request.POST.get('company_name')
         company, created = Company.objects.get_or_create(company_name=company_name)
-        mandatory_skill_names = request.POST.getlist('skills_mandatory')
-        optional_skill_names = request.POST.getlist('skills_optional')
-       
+        
+        # Handle mandatory skills
+        mandatory_skill_ids = request.POST.getlist('skills_mandatory')
+        mandatory_skills = Skill.objects.filter(pk__in=mandatory_skill_ids)
+
+        # Handle optional skills
+        optional_skill_ids = request.POST.getlist('skills_optional')
+        optional_skills = Skill.objects.filter(pk__in=optional_skill_ids)
+
+        # Create job instance and save
         job = Job.objects.create(
             title=title,
             description=description,
@@ -91,7 +141,7 @@ class JobForm(View):
             employment_type=employment_type,
             duration_in_months=duration_in_months,
             created_on=created_on,
-            validity_until=valid_until,
+            valid_until=valid_until,
             is_active=is_active,
             salary_visible=salary_visible,
             min_salary=min_salary,
@@ -100,6 +150,12 @@ class JobForm(View):
             years_of_experience=years_of_experience,
             company_info=company,
         )
-        mandatory_skill=Skill.objects.filter(name__in=mandatory_skill_names)
-        optional_skill=Skill.objects.filter(name__in=optional_skill_names)
-        messages.success(request,'Job created Successfully')
+
+        # Add mandatory and optional skills to the job instance
+        job.skills_mandatory.set(mandatory_skills)
+        job.skills_optional.set(optional_skills)
+        job.save()
+
+        messages.success(request, 'Job created successfully')
+        return redirect('job_creation')
+
