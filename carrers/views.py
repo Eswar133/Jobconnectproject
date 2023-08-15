@@ -4,11 +4,10 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect,HttpResponse,get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
-from .models import JobLocation, Skill,Job
+from .models import JobLocation, Skill,Job,Company
 from datetime import datetime
 from django.http import JsonResponse
-
-
+from django.contrib import messages
 
 class SignupView(View):
     template_name = 'my-signup.html'
@@ -59,58 +58,48 @@ class JobForm(View):
     def get(self, request):
         return render(request, self.template_name)
     
-    class JobForm(View):
-        template_name = 'job_creation.html'
-
-    def get(self, request):
-        return render(request, self.template_name)
-
     def post(self, request):
         title = request.POST.get('title')
         description = request.POST.get('description')
         role = request.POST.get('role')
         industry_type = request.POST.get('industry_type')
-        no_of_openings = request.POST.get('no_of_openings')
+        no_of_openings = int(request.POST.get('no_of_openings',0))
         location_name = request.POST.get('location_name')
         location = JobLocation.create_or_get_location(location_name)
         employment_type = request.POST.get('employment_type')
-        duration_in_months = request.POST.get('duration_in_months')
-        created_on = request.POST.get('created_on')
-        valid_until = request.POST.get('valid_until')
-        is_active = request.POST.get('is_active')
-        salary_visible = request.POST.get('salary_visible')
-        min_salary = request.POST.get('min_salary')
-        max_salary = request.POST.get('max_salary')
+        duration_in_months =int(request.POST.get('duration_in_months',0))
+        created_on = datetime.now()
+        valid_until = datetime.strptime(request.POST.get('valid_until'), '%Y-%m-%d')
+        is_active = bool(request.POST.get('is_active',False))
+        salary_visible =bool (request.POST.get('salary_visible',False))
+        min_salary = int(request.POST.get('min_salary', 0))
+        max_salary = int(request.POST.get('max_salary',0))
         education_level = request.POST.get('education_level')
-        years_of_experience = request.POST.get('years_of_experience')
+        years_of_experience = int(request.POST.get('years_of_experience',0))
         company_name = request.POST.get('company_name')
-        company, created = Company.objects.get_or_create(company_name='TCS')
+        company, created = Company.objects.get_or_create(company_name=company_name)
         mandatory_skill_names = request.POST.getlist('skills_mandatory')
         optional_skill_names = request.POST.getlist('skills_optional')
-        mandatory_skills = [Skill.objects.get_or_create(name=name)[0] for name in mandatory_skill_names]
-        optional_skills = [Skill.objects.get_or_create(name=name)[0] for name in optional_skill_names]
-
+       
         job = Job.objects.create(
             title=title,
             description=description,
             role=role,
             industry_type=industry_type,
-            how_many_openings=no_of_openings,
             location=location,
-            how_many_applied=0,
+            no_of_openings=no_of_openings,
             employment_type=employment_type,
-            intern_months=duration_in_months,
+            duration_in_months=duration_in_months,
             created_on=created_on,
             validity_until=valid_until,
             is_active=is_active,
-            salary_available=salary_visible,
+            salary_visible=salary_visible,
             min_salary=min_salary,
             max_salary=max_salary,
             education_level=education_level,
             years_of_experience=years_of_experience,
             company_info=company,
         )
-        job.skills_mandatory.set(mandatory_skills)
-        job.skills_optional.set(optional_skills)
-
-        return redirect('job_list')
+        mandatory_skill=Skill.objects.filter(name__in=mandatory_skill_names)
+        optional_skill=Skill.objects.filter(name__in=optional_skill_names)
+        messages.success(request,'Job created Successfully')

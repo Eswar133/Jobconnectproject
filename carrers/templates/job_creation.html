@@ -1,171 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Job Posting Form</title>
-  <!-- Include Bootstrap CSS -->
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Include jQuery UI CSS -->
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-</head>
-<body>
-  <div class="container mt-5">
-    <h2>Create a Job Posting</h2>
-    <form id="jobForm" method="POST" action="{% url 'job_creation' %}">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="title">Title:</label>
-        <input type="text" class="form-control" id="title" name="title" required>
-      </div>
-      <div class="form-group">
-        <label for="description">Description:</label>
-        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-      </div>
-      <div class="form-group">
-        <label for="role">Role:</label>
-        <input type="text" class="form-control" id="role" name="role" required>
-      </div>
-      <div class="form-group">
-        <label for="industry_type">Industry Type:</label>
-        <input type="text" class="form-control" id="industry_type" name="industry_type" required>
-      </div>
-      <div class="form-group">
-        <label for="how_many_openings">Number of Openings:</label>
-        <input type="number" class="form-control" id="how_many_openings" name="how_many_openings" required>
-      </div>
-      <div class="form-group">
-        <label for="location">Location:</label>
-        <input type="text" class="form-control" id="location" name="location" required>
-      </div>
-      <div class="form-group">
-        <label for="employment_type">Employment Type:</label>
-        <select class="form-control" id="employment_type" name="employment_type" required>
-          <option value="FULLTIME">Full-Time</option>
-          <option value="PARTTIME">Part-Time</option>
-          <option value="WORKFROMHOME">Work from Home</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="intern_months">Internship Months:</label>
-        <input type="number" class="form-control" id="intern_months" name="intern_months" required>
-      </div>
-      <div class="form-group">
-        <label for="created_on">Created On:</label>
-        <input type="datetime-local" class="form-control" id="created_on" name="created_on" required>
-      </div>
-      <div class="form-group">
-        <label for="validity_until">Validity Until:</label>
-        <input type="datetime-local" class="form-control" id="validity_until" name="validity_until" required>
-      </div>
-      <div class="form-group">
-        <label for="is_active">Is Active:</label>
-        <input type="checkbox" class="form-control" id="is_active" name="is_active">
-      </div>
-      <div class="form-group">
-        <label for="salary_available">Salary Available:</label>
-        <input type="checkbox" class="form-control" id="salary_available" name="salary_available">
-      </div>
-      <div class="form-group">
-        <label for="min_salary">Minimum Salary:</label>
-        <input type="number" class="form-control" id="min_salary" name="min_salary">
-      </div>
-      <div class="form-group">
-        <label for="max_salary">Maximum Salary:</label>
-        <input type="number" class="form-control" id="max_salary" name="max_salary">
-      </div>
-      <div class="form-group">
-        <label for="education_level">Education Level:</label>
-        <select class="form-control" id="education_level" name="education_level" required>
-          <option value="BACHELOR">Bachelor</option>
-          <option value="MASTER">Master</option>
-          <option value="DOCTORATE">Doctorate</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="years_of_experience">Years of Experience:</label>
-        <input type="number" class="form-control" id="years_of_experience" name="years_of_experience" required>
-      </div>
-      <div class="form-group">
-        <label for="mandatory_skills">Mandatory Skills (comma-separated):</label>
-        <input type="text" class="form-control" id="mandatory_skills" name="mandatory_skills">
-      </div>
-      <div class="form-group">
-        <label for="optional_skills">Optional Skills (comma-separated):</label>
-        <input type="text" class="form-control" id="optional_skills" name="optional_skills">
-      </div>
-      <div class="form-group">
-        <label for="company_name">Company Name:</label>
-        <input type="text" class="form-control" id="company_name" name="company_name" required>
-      </div>
-      <div class="form-group">
-        <button type="submit" class="btn btn-primary">Create Job Posting</button>
-      </div>
-    </form>
-  </div>
-  <div id="message"></div>
-</body>
-</html>
-
-  <script>
-    $(function() {
-      $("#datepickerOpenUntil").datepicker();
-      
-      
-      // Add event listener to Salary Visible checkbox
-      $("#salaryVisible").on("change", function() {
-        if (this.checked) {
-          $("#minSalary").prop("disabled", false);
-          $("#maxSalary").prop("disabled", false);
-        } else {
-          $("#minSalary").prop("disabled", true);
-          $("#maxSalary").prop("disabled", true);
-        }
-      });
-    });
-
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('job-form');
-        const messageDiv = document.getElementById('message');
-    
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();  // Prevent the form from submitting traditionally
-    
-            const formData = new FormData(form);
-    
-            fetch('/job-creation/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    // You can add more headers here if needed
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle the response from the backend
-                if (data.message === 'Job created successfully.') {
-                    messageDiv.textContent = 'Job created successfully!';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Job</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#valid_until").datepicker();
+            
+            $("input[name='salary_visible']").change(function () {
+                if ($(this).is(":checked")) {
+                    $("input[name='min_salary']").removeAttr("disabled");
+                    $("input[name='max_salary']").removeAttr("disabled");
                 } else {
-                    messageDiv.textContent = 'Failed to create job.';
+                    $("input[name='min_salary']").attr("disabled", "disabled");
+                    $("input[name='max_salary']").attr("disabled", "disabled");
                 }
-            })
-            .catch(error => {
-                messageDiv.textContent = 'An error occurred.';
-                console.error(error);
             });
         });
-    });
-    
-  </script>
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Create a New Job</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" class="form-control" name="title" required>
+            </div>
+
+        <label for="description">Description:</label>
+        <textarea name="description" rows="4" cols="50" required></textarea><br>
+
+        <label for="role">Role:</label>
+        <input type="text" name="role" required><br>
+
+        <label for="industry_type">Industry Type:</label>
+        <input type="text" name="industry_type" required><br>
+
+        <label for="no_of_openings">Number of Openings:</label>
+        <input type="number" name="no_of_openings" required><br>
+
+        <label for="location_name">Location Name:</label>
+        <input type="text" name="location_name" required><br>
+
+        <label for="employment_type">Employment Type:</label>
+        <input type="text" name="employment_type" required><br>
+
+        <label for="duration_in_months">Duration in Months:</label>
+        <input type="number" name="duration_in_months" required><br>
+
+        <div class="form-group">
+            <label for="valid_until">Valid Until:</label>
+            <input type="text" id="valid_until" class="form-control" name="valid_until" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" name="is_active"> Is Active
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" name="salary_visible" id="salary_visible"> Salary Visible
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label for="min_salary">Minimum Salary:</label>
+            <input type="number" class="form-control" name="min_salary" disabled>
+        </div>
+        
+        <div class="form-group">
+            <label for="max_salary">Maximum Salary:</label>
+            <input type="number" class="form-control" name="max_salary" disabled>
+        </div>
+        
+        <label for="education_level">Education Level:</label>
+        <input type="text" name="education_level" required><br>
+
+        <label for="years_of_experience">Years of Experience:</label>
+        <input type="number" name="years_of_experience" required><br>
+
+        <label for="company_name">Company Name:</label>
+        <input type="text" name="company_name" required><br>
+
+        <label for="skills_mandatory">Mandatory Skills:</label>
+        <input type="text" name="skills_mandatory" required><br>
+
+        <label for="skills_optional">Optional Skills:</label>
+        <input type="text" name="skills_optional"><br>
+
+        <button type="submit" class="btn btn-primary">Create Job</button>
+        </form>
+    </div>
 </body>
 </html>
-
-
-
-
-
-
