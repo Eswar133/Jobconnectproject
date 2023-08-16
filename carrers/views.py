@@ -53,39 +53,6 @@ def LogoutPage(request):
     return redirect('my-login')
 
 
-class LocationFormView(View):
-    template_name = 'job_location.html'  # Create a template named location_form.html
-
-    @method_decorator(login_required)
-    def get(self, request):
-        return render(request, self.template_name)
-
-    @method_decorator(login_required)
-    def post(self, request):
-        location_name = request.POST.get('location_name')
-        location, created = JobLocation.objects.get_or_create(name=location_name)
-        messages.success(request, f'Location "{location_name}" added successfully')
-        return redirect('job_creation')
-
-
-class SkillFormView(View):
-    template_name = 'skill_form.html'  # Create a template named skill_form.html
-
-    @method_decorator(login_required)
-    def get(self, request):
-        return render(request, self.template_name)
-
-    @method_decorator(login_required)
-    def post(self, request):
-        mandatory_skill_name = request.POST.get('skills_mandatory')
-        optional_skill_name = request.POST.get('skills_optional')
-        skill, created = Skill.objects.get_or_create(name=mandatory_skill_name)
-        skill, created = Skill.objects.get_or_create(name=optional_skill_name)
-        messages.success(request, f'Skill "{mandatory_skill_name} " added successfully')
-        messages.success(request, f'Skill "{optional_skill_name} " added successfully')
-        return redirect('job_creation')
-
-
 class JobForm(View):
     template_name = 'job_creation.html'
 
@@ -100,6 +67,24 @@ class JobForm(View):
             'job_locations': job_locations,
         })
 
+    def create_skill(request):
+        if request.method == "POST":
+            skill_name = request.POST.get("skill_name")
+            
+            # Perform validation: Check if the skill name is not empty and meets any other criteria.
+            if not skill_name:
+                response_data = {'success': False, 'message': 'Skill name is required'}
+            else:
+                # Save the skill to the database: Create a new Skill instance with the provided name and save it.
+                try:
+                    new_skill = Skill.objects.create(name=skill_name)
+                    response_data = {'success': True, 'message': 'Skill created successfully'}
+                except Exception as e:
+                    response_data = {'success': False, 'message': str(e)}
+            
+            return JsonResponse(response_data)
+    
+    
     @method_decorator(login_required)
     def post(self, request):
         title = request.POST.get('title')
@@ -107,8 +92,11 @@ class JobForm(View):
         role = request.POST.get('role')
         industry_type = request.POST.get('industry_type')
         no_of_openings = int(request.POST.get('no_of_openings', 0))
-        location_id = int(request.POST.get('location_name'))
-        location=get_object_or_404(JobLocation,id=location_id)
+        location_name = request.POST.get('location_name')
+        location=None
+        if location_name:
+            location, created = JobLocation.objects.get_or_create(name=location_name)
+
         employment_type = request.POST.get('employment_type')
         duration_in_months = int(request.POST.get('duration_in_months', 0))
         created_on = datetime.now()
@@ -124,11 +112,9 @@ class JobForm(View):
         
         # Handle mandatory skills
         mandatory_skill_ids = request.POST.getlist('skills_mandatory')
-        mandatory_skills = Skill.objects.filter(pk__in=mandatory_skill_ids)
-
-        # Handle optional skills
         optional_skill_ids = request.POST.getlist('skills_optional')
-        optional_skills = Skill.objects.filter(pk__in=optional_skill_ids)
+        mandatory_skills = Skill.objects.filter(name__in=mandatory_skill_ids)
+        optional_skills = Skill.objects.filter(name__in=optional_skill_ids)
 
         # Create job instance and save
         job = Job.objects.create(
@@ -156,6 +142,6 @@ class JobForm(View):
         job.skills_optional.set(optional_skills)
         job.save()
 
-        messages.success(request, 'Job created successfully')
-        return redirect('job_creation')
+        response_data = {'message': 'Job created successfully'}
+        return JsonResponse(response_data)
 
