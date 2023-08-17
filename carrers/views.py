@@ -84,6 +84,9 @@ class JobForm(View):
             
             return JsonResponse(response_data)
     
+    def create_or_get_location(self,location_name):
+        location,created =JobLocation.objects.get_or_create(name=location_name)
+        return location
     
     @method_decorator(login_required)
     def post(self, request):
@@ -95,7 +98,7 @@ class JobForm(View):
         location_name = request.POST.get('location_name')
         location=None
         if location_name:
-            location, created = JobLocation.objects.get_or_create(name=location_name)
+            location = self.create_or_get_location(location_name)
 
         employment_type = request.POST.get('employment_type')
         duration_in_months = int(request.POST.get('duration_in_months', 0))

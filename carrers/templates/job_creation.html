@@ -37,7 +37,7 @@
 
       <div class="mb-3">
         <label for="location_name">Job Location:</label>
-        <input type="text" id="location_name" name="location_name" class="form-control" required>
+        <input type="text" id="location_name" name="location_name" class="form-control" required list ="locationSuggestions">
         <!-- Display existing locations as suggestions -->
         <datalist id="locationSuggestions">
           {% for location_name in job_locations %}
