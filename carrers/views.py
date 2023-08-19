@@ -54,7 +54,7 @@ def LogoutPage(request):
 
 
 class JobForm(View):
-    template_name = 'job_creation.html'
+    template_name = 'carrers/job_creation.html'
 
     @method_decorator(login_required)
     def get(self, request):
@@ -148,3 +148,12 @@ class JobForm(View):
         response_data = {'message': 'Job created successfully'}
         return JsonResponse(response_data)
 
+class LocationListView(View):
+    def get(self,request,*args, **kwargs):
+        locations=JobLocation.objects.all().values('name')
+        return JsonResponse({'locations':list(locations)})
+    
+class SkillListView(View):
+    def get (self,request,*args,**kwargs):
+        skills=Skill.objects.all().values('name')
+        return JsonResponse({'skills':list(skills)})
