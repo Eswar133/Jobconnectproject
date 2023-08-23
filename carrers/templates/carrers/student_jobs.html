@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Job Listings</title>
+    <!-- Bootstrap CSS -->
+    <link href="path_to_bootstrap_css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    
+        .container {
+            margin-top: 20px;
+        }
+        .messages {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+            border-radius: 5px;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        h2 {
+            color: #343a40;
+        }
+        form {
+            border: 1px solid #e5e5e5;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f7f7f7;
+        }
+        label {
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .job-item {
+            border: 1px solid #e5e5e5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .job-item h3 {
+            color: #343a40;
+        }
+        .job-item p {
+            color: #6c757d;
+        }
+        .messages {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Job Listings for Students</h2>
+        <form method="get" action="{% url 'student_jobs' %}" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" name="skills" placeholder="Search by skills" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <select name="location" class="form-control">
+                        <option value="">Select location</option>
+                        {% for location in job_locations %}
+                            <option value="{{ location.name }}">{{ location.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="experience" placeholder="Min experience" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="min_salary" placeholder="Min salary" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="max_salary" placeholder="Max salary" class="form-control">
+                </div>
+            </div>
+            <div class="form-check mt-3">
+                <input type="checkbox" name="latest_jobs" class="form-check-input">
+                <label class="form-check-label">Latest jobs</label>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
+        </form>
+        <ul class="list-unstyled">
+            {% for job in job_listings %}
+            <li class="mb-4">
+                <h3>{{ job.title }}</h3>
+                <p>{{ job.description }}</p>
+                <p>Role: {{ job.role }}</p>
+                <p>Industry: {{ job.industry_type }}</p>
+                <p>Location: {{ job.location_name }}</p>
+                <p>Vacancies: {{ job.no_of_openings }}</p>
+                <p>Employment Type: {{ job.get_employment_type_display }}</p>
+                <p>Duration in Months: {{ job.duration_in_months }}</p>
+                <p>Valid Until: {{ job.valid_until }}</p>
+                <p>Created On: {{ job.created_on }}</p>
+                <p>Active: {{ job.is_active }}</p>
+                <p>Minimum Salary: {{ job.min_salary }}</p>
+                <p>Maximum Salary: {{ job.max_salary }}</p>
+                <p>Education Level: {{ job.education_level }}</p>
+                <p>Experience: {{ job.years_of_experience }}</p>
+                <p>Company: {{ job.company_name }}</p>
+                <p>Mandatory Skills: {{ job.skills_mandatory }}</p>
+                <p>Optional Skills: {{ job.skills_optional }}</p>
+                {% if not job.is_applied_by_student and request.user %}
+                        <form method="post" action="{% url 'apply_job' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="job_id" value="{{ job.id }}">
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                        </form>
+                        {% if messages %}
+                            <ul class="messages">
+                                {% for message in messages %}
+                                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% elif job.is_applied_by_student %}
+                        <p>Applied</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script src="path_to_bootstrap_js/bootstrap.min.js"></script>
+</body>
+</html>
+

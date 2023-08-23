@@ -1,0 +1,18 @@
+<!-- skills_page.html -->
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function(){
+        $("#skills-button").click(function(){
+            $.get("/get_skills/", function(data){
+                alert(data.skills);
+            });
+        });
+    });
+    </script>
+</head>
+<body>
+    <input type="button" id="skills-button" value="Skills">
+</body>
+</html>

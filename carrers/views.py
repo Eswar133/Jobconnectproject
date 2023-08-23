@@ -8,6 +8,7 @@ from .models import JobLocation, Skill,Job,Company
 from datetime import datetime
 from django.http import JsonResponse
 from django.contrib import messages
+from django.views.generic import TemplateView,ListView
 
 class SignupView(View):
     template_name = 'my-signup.html'
@@ -148,12 +149,64 @@ class JobForm(View):
         response_data = {'message': 'Job created successfully'}
         return JsonResponse(response_data)
 
-class LocationListView(View):
-    def get(self,request,*args, **kwargs):
-        locations=JobLocation.objects.all().values('name')
-        return JsonResponse({'locations':list(locations)})
+
     
-class SkillListView(View):
-    def get (self,request,*args,**kwargs):
-        skills=Skill.objects.all().values('name')
-        return JsonResponse({'skills':list(skills)})
+class GetSkillsView(View):
+    def get(self, request, *args, **kwargs):
+        skills = Skill.objects.all().values_list('name', flat=True)
+        return JsonResponse({'skills': list(skills)})
+    
+    
+class SkillsPageView(TemplateView):
+    template_name="carrers/skills_page.html"
+
+class StudentJobListView(ListView):
+    model = Job
+    template_name = 'carrers/student_jobs.html'
+    context_object_name = 'job_listings'
+    paginate_by=10
+    
+    def get_queryset(self):
+        queryset=super().get_queryset()
+        
+        location = self.request.GET.get('location')
+        skills = self.request.GET.get('skills')
+        experience = self.request.GET.get('experience')
+        min_salary = self.request.GET.get('min_salary')
+        max_salary = self.request.GET.get('max_salary')
+        latest_jobs = self.request.GET.get('latest_jobs')
+        
+        
+        if location:
+            queryset = queryset.filter(location__name=location)
+
+        if skills:
+            queryset = queryset.filter(Q(title__icontains=skills) | Q(description__icontains=skills))
+
+        if experience:
+            queryset = queryset.filter(years_of_experience__gte=experience)
+
+        if min_salary:
+            queryset = queryset.filter(min_salary__gte=min_salary)
+        
+        if max_salary:
+            queryset = queryset.filter(max_salary__lte=max_salary)
+        
+        if latest_jobs:
+            queryset = queryset.order_by('-created_on')
+        
+        return queryset
+    
+class ApplyJobView(View):
+    def post(self, request, *args, **kwargs):
+        job_id = request.POST.get('job_id')
+        student = request.user
+        job = Job.objects.get(pk=job_id)
+
+        if not job.is_applied_by_student(student):
+            job.students_applied.add(student)
+            messages.success(request, 'You have successfully applied for this job.')
+        else:
+            messages.warning(request, 'You have already applied for this job.')
+        
+        return redirect('student_jobs') 

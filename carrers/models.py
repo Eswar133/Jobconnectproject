@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
     
 class Skill(models.Model):
@@ -45,10 +46,15 @@ class Job(models.Model):
     skills_mandatory = models.ManyToManyField(Skill, related_name='jobs_mandatory')
     skills_optional = models.ManyToManyField(Skill, related_name='jobs_optional')
     company_info = models.ForeignKey(Company, on_delete=models.CASCADE,default=1)
-    
+    students_applied=models.ManyToManyField(User,related_name='applied_jobs',blank=True)
 
     def __str__(self):
         return self.title
+    
+    
+    def is_applied_by_student(self, student):
+        return student in self.students_applied.all()
+    
     @classmethod
     def create_or_get_location(cls, location_name):
         location, created = JobLocation.objects.get_or_create(name=location_name)
