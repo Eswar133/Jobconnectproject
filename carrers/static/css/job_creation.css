@@ -55,3 +55,61 @@ label.form-label {
     background-color: #0056b3;
     border-color: #0056b3;
 }
+
+.navbar {
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.navbar-title {
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.navbar-title h1 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.navbar-user {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-username {
+    margin-right: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-logout {
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-logout:hover {
+    background-color: #d1553f;
+}
+.navbar-job-button-container {
+    padding-right: 10px; /* Adjust this value as needed */
+}
+
+.navbar-job-button {
+    color: red;
+    padding: 0 5px;
+}

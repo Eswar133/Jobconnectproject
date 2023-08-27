@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,33 @@
     <!-- Bootstrap CSS -->
     <link href="path_to_bootstrap_css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e5e5e5;
+            border-radius: 5px;
+            background-color: #f7f7f7;
+        }
+        .filter-section h4 {
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a, .pagination .current {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .pagination .current {
+            background-color: #007bff;
+            color: #ffffff;
+        }
     
         .container {
             margin-top: 20px;
@@ -32,12 +60,14 @@
         }
         h2 {
             color: #343a40;
+            margin-bottom: 20px;
         }
         form {
             border: 1px solid #e5e5e5;
             padding: 15px;
             border-radius: 5px;
             background-color: #f7f7f7;
+            margin-bottom: 20px;
         }
         label {
             font-weight: bold;
@@ -72,9 +102,99 @@
             border: 1px solid #ebccd1;
             border-radius: 5px;
         }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            margin: 0 5px;
+            color: #007bff;
+        }
+        .pagination .current {
+            font-weight: bold;
+        }
+        .form-check {
+            margin-top: 10px;
+        }
+        
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.navbar-title {
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.navbar-title h1 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.navbar-user {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-username {
+    margin-right: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-logout {
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-logout:hover {
+    background-color: #d1553f;
+}
+
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <div class="navbar-title">
+            <div class="navbar-logo">
+                <img src="https://th.bing.com/th/id/OIG.ziA.KUy_wDzYr2Jp7UY9?pid=ImgGn" alt="Logo of JobConnect">
+            </div>
+            <h1>JobConnect</h1>
+        </div>
+        <div class="navbar-user">
+            <div class="navbar-username">
+                {% if username%}
+                Welcome, {{ username}}
+                {% endif%}
+            </div>
+            <a href="{% url 'jobs_applied' %}" class="navbar-job-button">Jobs Applied</a>
+            
+            <button class="navbar-logout" onclick="window.location.href='{% url 'my-logout' %}'">Logout</button>
+
+        </div>
+    </div>
     <div class="container">
         <h2>Job Listings for Students</h2>
         <form method="get" action="{% url 'student_jobs' %}" class="mb-4">
@@ -104,10 +224,22 @@
                 <input type="checkbox" name="latest_jobs" class="form-check-input">
                 <label class="form-check-label">Latest jobs</label>
             </div>
+            <div class="col-md-2">
+                <input type="date" name="created_on" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="valid_until" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="company_name" placeholder="Company name" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="duration_in_months" placeholder="Min duration" class="form-control">
+            </div>
             <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
         </form>
         <ul class="list-unstyled">
-            {% for job in job_listings %}
+            {% for job in page_obj %}
             <li class="mb-4">
                 <h3>{{ job.title }}</h3>
                 <p>{{ job.description }}</p>
@@ -124,9 +256,21 @@
                 <p>Maximum Salary: {{ job.max_salary }}</p>
                 <p>Education Level: {{ job.education_level }}</p>
                 <p>Experience: {{ job.years_of_experience }}</p>
-                <p>Company: {{ job.company_name }}</p>
-                <p>Mandatory Skills: {{ job.skills_mandatory }}</p>
-                <p>Optional Skills: {{ job.skills_optional }}</p>
+                <p>Company name: {{ job.company_info.company_name }}</p>
+                <p>Company address: {{ job.company_info.address }}</p>
+                <p>Company website: {{ job.company_info.website }}</p>
+                <p>Mandatory Skills:
+                    {% for skill in job.skills_mandatory.all %}
+                        {{ skill.name }},
+                    {% endfor %}
+                </p>
+                <p>Optional Skills:
+                    {% for skill in job.skills_optional.all %}
+                        {{ skill.name }},
+                    {% endfor %}
+                </p>
+                
+                
                 {% if not job.is_applied_by_student and request.user %}
                         <form method="post" action="{% url 'apply_job' %}">
                             {% csrf_token %}
@@ -146,9 +290,45 @@
                 </li>
             {% endfor %}
         </ul>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
     </div>
+    <script src="{% static 'path_to_bootstrap_js/bootstrap.min.js' %}">
+        document.querySelectorAll('.apply-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const jobId = button.getAttribute('data-job-id'); // Get the job ID from data attribute
+                fetch(`/apply_job/?job_id=${jobId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            button.textContent = 'Applied';
+                            button.disabled = true;
+                            // Update other parts of UI if needed
+                        } else {
+                            console.log('Application failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+          });
 
-    <script src="path_to_bootstrap_js/bootstrap.min.js"></script>
+          
+    </script>
 </body>
 </html>
 

@@ -1,4 +1,11 @@
 
+var csrftoken = getCookie('csrftoken'); // Function to get the CSRF token from cookies
+$.ajax({
+    // ...
+    headers: { "X-CSRFToken": csrftoken },
+    // ...
+});
+
 $(document).ready(function () {
     // Initialize datepickers
     $('.datepicker').datepicker({
@@ -11,7 +18,8 @@ $(document).ready(function () {
     $("#createJobForm").submit(function(event) {
       event.preventDefault();
   
-      var formData = new FormData(this); // Collect form data
+      var formData = new FormData(this);
+      formData.append('csrfmiddlewaretoken', $('input[name=csrfmiddlewaretoken]').val());
       $.ajax({
           type: "POST",
           url: "{% url 'job_creation' %}",  // Update with your URL
@@ -20,7 +28,7 @@ $(document).ready(function () {
           contentType: false,
           success: function(response) {
               console.log("Job created successfully!");
-              $("#message").removeCkass().text("Job created successfully!");
+              $("#message").text("Job created successfully!");
               // Display a success message or handle it as needed
           },
           error: function(error) {
@@ -62,4 +70,8 @@ fetch('/locations/')
       });
 
   });
+
+
+  // Assuming you have a "Apply" button with a class "apply-button" for each job listing
+
 

@@ -9,6 +9,11 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.contrib import messages
 from django.views.generic import TemplateView,ListView
+from django.utils import timezone
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 class SignupView(View):
     template_name = 'my-signup.html'
@@ -45,13 +50,19 @@ class LoginView(View):
         user = authenticate(request, username=username, password=pass1)
         if user is not None:
             login(request, user)
-            return redirect('job_creation')
+            role = request.POST.get('role')
+            if role == 'candidate':
+                return redirect('student_jobs')  # Redirect to student jobs page
+            elif role == 'hr':
+                return redirect('job_creation')  # Redirect to job creation page
         else:
             return HttpResponse("Username or Password is incorrect!!!")
-
-def LogoutPage(request):
-    logout(request)
-    return redirect('my-login')
+        
+        
+class LogoutView(View):
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        return redirect('my-login')
 
 
 class JobForm(View):
@@ -59,36 +70,24 @@ class JobForm(View):
 
     @method_decorator(login_required)
     def get(self, request):
+        is_hr = request.user.groups.filter(name='HR').exists()
         skills_mandatory = Skill.objects.all()
         skills_optional = Skill.objects.all()
         job_locations = JobLocation.objects.all()
+        companies = Company.objects.filter(user=request.user)
+        if companies.exists():
+            company = companies.first()  # Choose the first Company object
+        else:
+            company = None  # No Company object found
+
         return render(request, self.template_name, {
             'skills_mandatory': skills_mandatory,
             'skills_optional': skills_optional,
             'job_locations': job_locations,
+            'is_hr': is_hr,
+            'company': company,
         })
 
-    def create_skill(request):
-        if request.method == "POST":
-            skill_name = request.POST.get("skill_name")
-            
-            # Perform validation: Check if the skill name is not empty and meets any other criteria.
-            if not skill_name:
-                response_data = {'success': False, 'message': 'Skill name is required'}
-            else:
-                # Save the skill to the database: Create a new Skill instance with the provided name and save it.
-                try:
-                    new_skill = Skill.objects.create(name=skill_name)
-                    response_data = {'success': True, 'message': 'Skill created successfully'}
-                except Exception as e:
-                    response_data = {'success': False, 'message': str(e)}
-            
-            return JsonResponse(response_data)
-    
-    def create_or_get_location(self,location_name):
-        location,created =JobLocation.objects.get_or_create(name=location_name)
-        return location
-    
     @method_decorator(login_required)
     def post(self, request):
         title = request.POST.get('title')
@@ -97,9 +96,7 @@ class JobForm(View):
         industry_type = request.POST.get('industry_type')
         no_of_openings = int(request.POST.get('no_of_openings', 0))
         location_name = request.POST.get('location_name')
-        location=None
-        if location_name:
-            location = self.create_or_get_location(location_name)
+        location = self.create_or_get_location(location_name)
 
         employment_type = request.POST.get('employment_type')
         duration_in_months = int(request.POST.get('duration_in_months', 0))
@@ -112,15 +109,29 @@ class JobForm(View):
         education_level = request.POST.get('education_level')
         years_of_experience = int(request.POST.get('years_of_experience', 0))
         company_name = request.POST.get('company_name')
-        company, created = Company.objects.get_or_create(company_name=company_name)
-        
-        # Handle mandatory skills
-        mandatory_skill_ids = request.POST.getlist('skills_mandatory')
-        optional_skill_ids = request.POST.getlist('skills_optional')
-        mandatory_skills = Skill.objects.filter(name__in=mandatory_skill_ids)
-        optional_skills = Skill.objects.filter(name__in=optional_skill_ids)
+        address = request.POST.get('address')
+        website = request.POST.get('website')
+        company, created = Company.objects.get_or_create(user=request.user)
+        company.company_name = company_name
+        company.address = address
+        company.website = website
+        company.save()
+        mandatory_skill_names = request.POST.get('skills_mandatory').split(',')
+        mandatory_skills = []
 
-        # Create job instance and save
+        for skill_name in mandatory_skill_names:
+            skill, created = Skill.objects.get_or_create(name=skill_name.strip())
+            mandatory_skills.append(skill)
+
+        optional_skill_names = request.POST.get('skills_optional').split(',')
+        optional_skills = []
+
+        for skill_name in optional_skill_names:
+            skill, created = Skill.objects.get_or_create(name=skill_name.strip())
+            optional_skills.append(skill)
+        
+        
+            
         job = Job.objects.create(
             title=title,
             description=description,
@@ -139,15 +150,20 @@ class JobForm(View):
             education_level=education_level,
             years_of_experience=years_of_experience,
             company_info=company,
+            
         )
-
-        # Add mandatory and optional skills to the job instance
-        job.skills_mandatory.set(mandatory_skills)
-        job.skills_optional.set(optional_skills)
+        job.skills_mandatory.set(mandatory_skills)  # Set the mandatory skill IDs
+        job.skills_optional.set(optional_skills)    # Set the optional skill IDs
         job.save()
-
         response_data = {'message': 'Job created successfully'}
         return JsonResponse(response_data)
+
+    def create_or_get_location(self, location_name):
+        location, created = JobLocation.objects.get_or_create(name=location_name)
+        return location
+
+
+
 
 
     
@@ -174,7 +190,12 @@ class StudentJobListView(ListView):
         experience = self.request.GET.get('experience')
         min_salary = self.request.GET.get('min_salary')
         max_salary = self.request.GET.get('max_salary')
-        latest_jobs = self.request.GET.get('latest_jobs')
+        role=self.request.GET.get('role')
+        created_on = self.request.GET.get('created_on')
+        valid_until_str = self.request.GET.get('valid_until')
+        company_name = self.request.GET.get('company_name')
+        duration_in_months = self.request.GET.get('duration_in_months')
+        
         
         
         if location:
@@ -192,10 +213,55 @@ class StudentJobListView(ListView):
         if max_salary:
             queryset = queryset.filter(max_salary__lte=max_salary)
         
-        if latest_jobs:
-            queryset = queryset.order_by('-created_on')
+        if role:
+            queryset=queryset.filter(role=role)
+            
+        if created_on:
+            created_on = timezone.make_aware(datetime.strptime(created_on, '%Y-%m-%d'))
+            queryset = queryset.filter(created_on__date=created_on.date())
+
+        if valid_until_str:
+            valid_until = timezone.make_aware(datetime.strptime(valid_until_str, '%Y-%m-%d'))
+            queryset = queryset.filter(valid_until__gte=valid_until)
+
+        if company_name:
+            queryset = queryset.filter(company_info__company_name__icontains=company_name)
+
+        if duration_in_months:
+            queryset = queryset.filter(duration_in_months__gte=duration_in_months)
+
         
+        if created_on :
+            created_on=timezone.make_aware(datetime.strptime(created_on, '%Y-%m-%d'))
+            queryset = queryset.filter(created_on__date=created_on.date())
+
+        if valid_until_str:
+            valid_until = datetime.strptime(valid_until_str, '%Y-%m-%d')
+            queryset = queryset.filter(valid_until__gte=valid_until)
+        
+        if company_name:
+            queryset = queryset.filter(company_info__company_name__icontains=company_name)
+
+        if duration_in_months:
+            queryset = queryset.filter(duration_in_months__gte=duration_in_months)
+
         return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['username'] = self.request.user.username if self.request.user.is_authenticated else None
+
+        
+        
+        jobs = self.get_queryset()  # Get the filtered queryset
+        paginator = Paginator(jobs, self.paginate_by)  # Create a Paginator instance
+        page_number = self.request.GET.get('page')  # Get the page number from the request
+        page_obj = paginator.get_page(page_number)  # Get the page object
+
+        context['page_obj'] = page_obj  # Add the page object to the context
+
+        return context
     
 class ApplyJobView(View):
     def post(self, request, *args, **kwargs):
@@ -210,3 +276,38 @@ class ApplyJobView(View):
             messages.warning(request, 'You have already applied for this job.')
         
         return redirect('student_jobs') 
+    
+    
+class JobsAppliedView(LoginRequiredMixin, ListView):
+    model = Job
+    template_name = 'carrers/jobs_applied.html'
+    context_object_name = 'job_listings'
+    paginate_by = 10
+
+    def get_queryset(self):
+        user = self.request.user
+        return Job.objects.filter(students_applied=user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['username'] = self.request.user.username if self.request.user.is_authenticated else None
+        return context
+
+
+
+
+class JobsPostedView(LoginRequiredMixin, ListView):
+    model = Job
+    template_name = 'carrers/my_jobs_posted.html'  
+    context_object_name = 'job_listings'
+    paginate_by = 10
+
+    def get_queryset(self):
+        user = self.request.user
+        return Job.objects.filter(company_info__user=user)  # Filter jobs posted by the logged-in user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['username'] = self.request.user.username if self.request.user.is_authenticated else None
+        return context
+

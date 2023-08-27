@@ -12,10 +12,31 @@
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'js/job_creation.js' %}"></script>
 </head>
-<body>  
+<body> 
+    <div class="navbar">
+        <div class="navbar-title">
+            <div class="navbar-logo">
+                <img src="https://th.bing.com/th/id/OIG.ziA.KUy_wDzYr2Jp7UY9?pid=ImgGn" alt="Logo">
+            </div>
+            <h1>JobConnect</h1>
+        </div>
+        <div class="navbar-user">
+            <div class="navbar-username">
+                {% if username %}
+                    Welcome, {{ username }}
+                {% endif %}
+            </div>
+            <div class="navbar-job-button-container">
+                <a href="{% url 'my_jobs_posted'  %}" class="navbar-job-button">My Posted Jobs</a>
+            </div>
+            <button class="navbar-logout" onclick="window.location.href='{% url 'my-logout' %}'">Logout</button>
+        </div>
+        
+    </div> 
 <div class="container mt-5">
     <h2>Create a New Job</h2>
     <form method="post" id="createJobForm">
+        {%csrf_token%}
         <div class="form-row">
             <div class="form-group">
                 <label for="title" class="form-label">Title:</label>
@@ -108,35 +129,35 @@
                 <label for="years_of_experience" class="form-label">Experience :</label>
                 <input type="number" name="years_of_experience" class="form-control" required>
             </div>
-        
-        <!-- Ninth Row -->
-        
-            <div class="form-group">
-                <label for="company_name" class="form-label">Company Name:</label>
-                <input type="text" name="company_name" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="skills_mandatory">Mandatory Skills:</label>
-                <input type="text" id="skills_mandatory" name="skills_mandatory" class="form-control" required>
-                <datalist id="mandatorySkillSuggestions">
-                    {% for skill in skills_mandatory %}
-                        <option value="{{ skill.name }}">{{ skill.name }}</option>
-                    {% endfor %}
-                </datalist>
-            </div>
-      
-        <!-- Tenth Row -->
-        
-            <div class="form-group">
-                <label for="skills_optional">Optional Skills:</label>
-                <input type="text" id="skills_optional" name="skills_optional" class="form-control">
-                <datalist id="optionalSkillSuggestions">
-                    {% for skill1 in skills_optional %}
-                        <option value="{{ skill1.name }}">{{ skill1.name }}</option>
-                    {% endfor %}
-                </datalist>
-            
-        </div>
+      <!-- ... Previous HTML code ... -->
+
+<div class="form-row">
+    <div class="form-group">
+        <label for="company_name" class="form-label">Company Name:</label>
+        <input type="text" name="company_name" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="address" class="form-label">Company Address:</label>
+        <textarea name="address" rows="4" class="form-control"></textarea>
+    </div>
+</div>
+<div class="form-group">
+    <label for="website" class="form-label">Company Website:</label>
+    <input type="url" name="website" class="form-control">
+</div>
+<div class="form-group">
+    <label for="skills_mandatory">Mandatory Skills:</label>
+    <input type="text" id="skills_mandatory" name="skills_mandatory" class="form-control" required>
+  </div>
+  
+  <div class="form-group">
+    <label for="skills_optional">Optional Skills:</label>
+    <input type="text" id="skills_optional" name="skills_optional" class="form-control">
+  </div>
+
+
+<!-- ... Submit Button and other remaining HTML code ... -->
+
         <!-- Submit Button -->
         <div class="text-center">
             <button type="submit" class="btn btn-primary">Create Job</button>

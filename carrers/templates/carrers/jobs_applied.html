@@ -1,0 +1,91 @@
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Jobs Applied by {{ username }}</h2>
+    <ul class="list-unstyled">
+        {% for job in job_listings %}
+        <li class="job-item mb-4">
+            <h3>{{ job.title }}</h3>
+            <p>Description:{{job.description}}</p>
+            <p>Role: {{ job.role }}</p>
+            <p>Industry: {{ job.industry_type }}</p>
+            <p>Vacancies: {{ job.no_of_openings }}</p>
+            <p>Employment Type: {{ job.get_employment_type_display }}</p>
+            <p>Duration in Months: {{ job.duration_in_months }}</p>
+            <p>Valid Until: {{ job.valid_until }}</p>
+            <p>Created On: {{ job.created_on }}</p>
+            <p>Active: {% if job.is_active %}Yes{% else %}No{% endif %}</p>
+            <p>Minimum Salary: {{ job.min_salary }}</p>
+            <p>Maximum Salary: {{ job.max_salary }}</p>
+            <p>Education Level: {{ job.education_level }}</p>
+            <p>Experience: {{ job.years_of_experience }}</p>
+            <p>Company name: {{ job.company_info.company_name }}</p>
+            <p>Company address: {{ job.company_info.address}}</p>
+            <p>Company website: {{ job.company_info.website }}</p>            
+            <p>Mandatory Skills: 
+                {% for skill in job.skills_mandatory.all %}
+                {{ skill.name }},
+                {% endfor %}
+            </p>
+            <p>Optional Skills: 
+                {% for skill in job.skills_optional.all %}
+                {{ skill.name }},
+            {% endfor %}
+            </p>
+            
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+<style>/* Global styles */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+    }
+    
+    .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Header styles */
+    h2 {
+        margin-top: 0;
+        color: #333;
+    }
+    
+    /* Job item styles */
+    .job-item {
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #fff;
+    }
+    
+    .job-item h3 {
+        margin-top: 0;
+        color: #444;
+    }
+    
+    .job-item p {
+        margin: 5px 0;
+        color: #666;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+    
+        .job-item {
+            padding: 10px;
+        }
+    }
+    </style>

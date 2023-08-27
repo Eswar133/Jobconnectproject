@@ -12,8 +12,12 @@ class Company(models.Model):
     company_name = models.CharField(max_length=255)
     address = models.TextField(null=True)
     website = models.URLField(null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Example default value
+
     def __str__(self):
         return self.company_name
+
+        
 
 class JobLocation(models.Model):
     name = models.CharField(max_length=255)
@@ -43,8 +47,8 @@ class Job(models.Model):
     max_salary = models.PositiveSmallIntegerField(null=True, blank=True)
     education_level = models.CharField(max_length=255)
     years_of_experience = models.PositiveSmallIntegerField()
-    skills_mandatory = models.ManyToManyField(Skill, related_name='jobs_mandatory')
-    skills_optional = models.ManyToManyField(Skill, related_name='jobs_optional')
+    skills_mandatory = models.ManyToManyField(Skill, related_name='mandatory_jobs')
+    skills_optional = models.ManyToManyField(Skill, related_name='optional_jobs')
     company_info = models.ForeignKey(Company, on_delete=models.CASCADE,default=1)
     students_applied=models.ManyToManyField(User,related_name='applied_jobs',blank=True)
 
